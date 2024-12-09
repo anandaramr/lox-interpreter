@@ -5,13 +5,15 @@ import java.util.List;
 
 public class Lexer {
     private final List<Token> tokens;
+    int line;
 
     public Lexer() {
         this.tokens = new ArrayList<>();
     }
 
-    public List<Token> tokenize(String source) {
+    public List<Token> tokenize(String source, int line) {
         SourceManager src = new SourceManager(source);
+        this.line = line;
 
         while(!src.isAtEnd()) {
             if(isAlpha(src.peek())) {
@@ -73,7 +75,7 @@ public class Lexer {
     }
 
     private void addToken(TokenType type, String lexeme) {
-        tokens.add(new Token(type, lexeme));
+        tokens.add(new Token(type, lexeme, line));
     }
 
     private boolean isAlpha(char c) {

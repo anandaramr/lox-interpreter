@@ -42,12 +42,15 @@ public class Interpreter {
         if(tokens.match(TokenType.STRING, TokenType.IDENTIFIER)) buffer.append(valueOf(tokens.previous()));
 
         while(tokens.match(TokenType.PLUS)) {
-            tokens.expect("Unexpected symbol: \n\t" + tokens.peek().lexeme, TokenType.STRING, TokenType.IDENTIFIER);
+            tokens.expect("Unexpected symbol: \n\t" + tokens.peek().line, TokenType.STRING, TokenType.IDENTIFIER);
             buffer.append(valueOf(tokens.previous()));
         }
 
-        boolean noError = tokens.expect("Syntax Error: \n\tExpected semicolon at end of input", TokenType.SEMICOLON);
-        return noError ? buffer : new StringBuilder();
+        boolean firstSync = tokens.isSynchronized();
+        tokens.expect("Syntax Error: \n\tExpected semicolon at end of input", TokenType.SEMICOLON);
+        boolean secondSync = tokens.isSynchronized();
+
+        return firstSync || secondSync ? new StringBuilder() : buffer;
     }
 
     private String valueOf(Token token) {
@@ -77,9 +80,12 @@ public class Interpreter {
 class TokenManager {
     List<Token> tokens;
     private int current;
+    private boolean isSync;
 
     TokenManager(List<Token> tokens) {
         this.tokens = tokens;
+        this.current = 0;
+        this.isSync = false;
     }
 
     public boolean match(TokenType ...types) {
@@ -94,12 +100,11 @@ class TokenManager {
         return false;
     }
 
-    public boolean expect(String err, TokenType ...type) {
-        if(match(type)) return true;
+    public void expect(String err, TokenType ...type) {
+        if(match(type)) return;
 
         System.out.println(err);
         synchronize();
-        return false;
     }
 
     public Token peek() {
@@ -109,6 +114,13 @@ class TokenManager {
 
     public void synchronize() {
         while(!isAtEnd() && peek().type!=TokenType.SEMICOLON) advance();
+        isSync = true;
+    }
+
+    public boolean isSynchronized() {
+        if(!isSync) return false;
+        isSync = false;
+        return true;
     }
 
     public Token previous() {
