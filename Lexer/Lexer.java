@@ -1,129 +1,94 @@
 package Lexer;
 
+import Lox.Lox;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class Lexer {
     private final List<Token> tokens;
-    int line;
+    SourceManager src;
 
     public Lexer() {
         this.tokens = new ArrayList<>();
     }
 
     public List<Token> tokenize(String source, int line) {
-        SourceManager src = new SourceManager(source);
-        this.line = line;
+        src = new SourceManager(source, line);
 
         while(!src.isAtEnd()) {
             if(isAlpha(src.peek())) {
-                while(!src.isAtEnd() && isAlpha(src.peek())) src.advance();
+                while(!src.isAtEnd() && isAlphaNumeric(src.peek())) src.advance();
 
-                TokenType type = Keywords.getType(src.getString());
+                String lexeme = src.getLexeme();
+                TokenType type = Keywords.getType(lexeme);
+
                 if(type==null) type = TokenType.IDENTIFIER;
-                addToken(type, src.getString());
+                addToken(type, lexeme);
             }
-            else if (src.peek()=='"') {
-                src.ignore();
+            else if(isNumeric(src.peek())) {
+                while(!src.isAtEnd() && isNumeric(src.peek())) src.advance();
+                addToken(TokenType.INTEGER, src.getLexeme());
+            }
+            else if (src.match('+')) {
+                if(!src.match('=')) src.match('+');
+
+                String lexeme = src.getLexeme();
+                addToken(Operators.getType(lexeme), lexeme);
+            }
+            else if (src.match('-')) {
+                if(!src.match('=')) src.match('-');
+
+                String lexeme = src.getLexeme();
+                addToken(Operators.getType(lexeme), lexeme);
+            }
+            else if ( src.match('*', '/', '=', '<', '>') ) {
+                src.match('=');
+
+                String lexeme = src.getLexeme();
+                addToken(Operators.getType(lexeme), lexeme);
+            }
+            else if (src.match('"')) {
                 while(!src.isAtEnd() && src.peek()!='"') src.advance();
-                addToken(TokenType.STRING, src.getString());
+                src.expect('"', "Expected \" end of string");
 
-                src.expect('"', "Expected end of string \"");
-
+                addToken(TokenType.STRING, src.getLexeme());
             }
-            else if (src.peek()=='+') {
+            else if (src.match('(')) {
+                addToken(TokenType.LEFTPAR, src.getLexeme());
+            }
+            else if (src.match(')')) {
+                addToken(TokenType.RIGHTPAR, src.getLexeme());
+            }
+            else if (src.match(';')) {
+                addToken(TokenType.SEMICOLON, src.getLexeme());
+            }
+            else if (!src.match(' ', '\t')) {
+                // to-do: define SyntaxError class to handle error
+                Lox.error("Syntax Error: Unexpected token: \"" + src.peek() + '"');
                 src.advance();
-                if(src.peek()=='=') {
-                    src.advance();
-                    addToken(TokenType.PLUSEQ, "+=");
-                }
-                else addToken(TokenType.PLUS, "+");
-            }
-            else if (src.peek()=='(') {
-                src.advance();
-                addToken(TokenType.LPAR, "(");
-            }
-            else if (src.peek()==')') {
-                src.advance();
-                addToken(TokenType.RPAR, ")");
-            }
-            else if (src.peek()==';') {
-                src.advance();
-                addToken(TokenType.SEMICOLON, ";");
-            }
-            else if (src.peek()=='=') {
-                src.advance();
-
-                if(src.peek()=='=') {
-                    src.advance();
-                    addToken(TokenType.DEQ, "==");
-                }
-                else addToken(TokenType.EQUAL, "=");
-            }
-            else if (src.peek()==' ') {
-                src.ignore();
-            }
-            else {
-                System.out.println("Unrecognized character: " + src.peek() + " (" + (int) src.peek() + ")");
-                System.exit(1);
             }
 
-            src.reset();
+            src.resetPtr();
         }
 
         return tokens;
     }
 
     private void addToken(TokenType type, String lexeme) {
-        tokens.add(new Token(type, lexeme, line));
+        tokens.add(new Token(type, lexeme, src.line));
     }
 
     private boolean isAlpha(char c) {
         return ( c>='a' && c<='z' || c>='A' && c<='Z' );
     }
-}
 
-class SourceManager {
-    private final String source;
-    private int start;
-    private int current;
-
-    SourceManager(String source) {
-        this.source = source;
-        this.start = 0;
-        this.current = 0;
+    private boolean isNumeric(char c) {
+        return c>='0' && c<='9';
     }
 
-    public char peek() {
-        return source.charAt(current);
-    }
-
-    public void advance() {
-        if(!isAtEnd()) current++;
-    }
-
-    public boolean isAtEnd() {
-        return current==source.length();
-    }
-
-    public void ignore() {
-        start = ++current;
-    }
-
-    public void expect(char c, String err) {
-        if(!isAtEnd() && peek()==c) {
-            ignore();
-            return;
-        }
-
-        System.out.println("Syntax Error: \n\t" + err);
-    }
-
-    public String getString() {
-        return source.substring(start,current);
-    }
-
-    public void reset() {
-        start = current;
+    private boolean isAlphaNumeric(char c) {
+        return isAlpha(c) || isNumeric(c);
     }
 }
+
