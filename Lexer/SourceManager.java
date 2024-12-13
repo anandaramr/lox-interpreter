@@ -6,13 +6,13 @@ public class SourceManager {
     private final String source;
     private int start;
     private int current;
-    public final int line;
+    public int line;
 
-    SourceManager(String source, int line) {
+    SourceManager(String source) {
         this.source = source;
         this.start = 0;
         this.current = 0;
-        this.line = line;
+        this.line = 1;
     }
 
     public char peek() {
@@ -43,12 +43,12 @@ public class SourceManager {
 
     public void expect(char c, String err) {
         if(isAtEnd() && c!='"') {
-            Lox.error("Unexpected end of statement");
+            Lox.error("Unexpected end of statement", line);
             return;
         }
 
         if(!match(c)) {
-            Lox.error("Syntax Error: Expected '" + c + "'");
+            Lox.error("Syntax Error: Expected '" + c + "'", line);
             advance();
         }
     }

@@ -13,8 +13,8 @@ public class Lexer {
         this.tokens = new ArrayList<>();
     }
 
-    public List<Token> tokenize(String source, int line) {
-        src = new SourceManager(source, line);
+    public List<Token> tokenize(String source) {
+        src = new SourceManager(source);
 
         while(!src.isAtEnd()) {
             if(isAlpha(src.peek())) {
@@ -65,10 +65,10 @@ public class Lexer {
                 addToken(TokenType.SEMICOLON, src.getLexeme());
             }
             else if (src.match('\n')) {
-                Lox.incrementLineCount();
+                src.line++;
             } else if (!src.match(' ', '\t')) {
                 // to-do: define SyntaxError class to handle error
-                Lox.error("Syntax Error: Unexpected token: \"" + src.peek() + '"');
+                Lox.error("Syntax Error: Unexpected token: \"" + src.peek() + '"', src.line);
                 src.advance();
             }
 

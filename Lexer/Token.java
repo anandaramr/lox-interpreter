@@ -15,6 +15,6 @@ public class Token {
     public String toString() {
         String quotes = type==TokenType.STRING ? "\"" : "";
 
-        return "( " + type + ", " + quotes + lexeme + quotes + (line!=0 ? line : "") + " )";
+        return "( " + type + ", " + quotes + lexeme + quotes + (line!=0 ? ", " + line : "") + " )";
     }
 }

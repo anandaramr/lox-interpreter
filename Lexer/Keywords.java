@@ -11,6 +11,7 @@ public class Keywords {
         keywords.put("true", TokenType.TRUE);
         keywords.put("false", TokenType.FALSE);
         keywords.put("null", TokenType.NULL);
+        keywords.put("print", TokenType.PRINT);
     }
 
     public static TokenType getType(String key) {
