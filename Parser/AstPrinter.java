@@ -1,5 +1,7 @@
 package Parser;
 
+import Lox.Lox;
+
 public class AstPrinter implements Expr.Visitor<String> {
     int level = 0;
 
@@ -19,7 +21,7 @@ public class AstPrinter implements Expr.Visitor<String> {
 
     @Override
     public String visitLiteral(Expr.Literal expr) {
-        return expr.value.toString();
+        return Lox.stringify(expr.value);
     }
 
     private String parenthesize(String prefix, Expr ...expressions) {

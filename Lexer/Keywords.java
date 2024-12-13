@@ -8,9 +8,9 @@ public class Keywords {
     static {
         keywords.put("let", TokenType.LET);
         keywords.put("const", TokenType.CONST);
-        keywords.put("true", TokenType.CONST);
-        keywords.put("false", TokenType.CONST);
-        keywords.put("null", TokenType.CONST);
+        keywords.put("true", TokenType.TRUE);
+        keywords.put("false", TokenType.FALSE);
+        keywords.put("null", TokenType.NULL);
     }
 
     public static TokenType getType(String key) {

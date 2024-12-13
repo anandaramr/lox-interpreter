@@ -85,7 +85,8 @@ public class Parser {
     }
 
     private Expr parsePrimary() {
-        if(tokens.match(TokenType.STRING, TokenType.INTEGER)) return new Expr.Literal(tokens.previous().lexeme);
+        if(tokens.match(TokenType.STRING)) return new Expr.Literal((String)tokens.previous().lexeme);
+        if(tokens.match(TokenType.INTEGER)) return new Expr.Literal(Double.parseDouble(tokens.previous().lexeme));
         if(tokens.match(TokenType.IDENTIFIER)) return new Expr.Literal(tokens.previous().lexeme);
         if(tokens.match(TokenType.TRUE)) return new Expr.Literal(true);
         if(tokens.match(TokenType.FALSE)) return new Expr.Literal(false);

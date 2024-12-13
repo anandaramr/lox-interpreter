@@ -49,10 +49,11 @@ public class Lexer {
                 addToken(Operators.getType(lexeme), lexeme);
             }
             else if (src.match('"')) {
+                src.resetPtr();
                 while(!src.isAtEnd() && src.peek()!='"') src.advance();
-                src.expect('"', "Expected \" end of string");
-
                 addToken(TokenType.STRING, src.getLexeme());
+
+                src.expect('"', "Expected \" end of string");
             }
             else if (src.match('(')) {
                 addToken(TokenType.LEFTPAR, src.getLexeme());
@@ -63,7 +64,9 @@ public class Lexer {
             else if (src.match(';')) {
                 addToken(TokenType.SEMICOLON, src.getLexeme());
             }
-            else if (!src.match(' ', '\t')) {
+            else if (src.match('\n')) {
+                Lox.incrementLineCount();
+            } else if (!src.match(' ', '\t')) {
                 // to-do: define SyntaxError class to handle error
                 Lox.error("Syntax Error: Unexpected token: \"" + src.peek() + '"');
                 src.advance();
