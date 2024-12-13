@@ -4,16 +4,49 @@ import Lexer.Token;
 import Lox.Lox;
 import Lox.RuntimeError;
 import Parser.Expr;
+import Parser.Stmt;
 
-public class Interpreter implements Expr.Visitor<Object> {
+import java.util.List;
 
-    public void interpret(Expr expr) {
+public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
+    Environment environment = new Environment();
+
+    public void interpret(List<Stmt> statements) {
         try {
-            Object value = evaluate(expr);
-            System.out.println(Lox.stringify(value));
+            for(Stmt statement: statements) {
+                execute(statement);
+            }
         } catch (RuntimeError err) {
             Lox.runtimeError(err);
         }
+    }
+
+    private void execute(Stmt statement) {
+        statement.accept(this);
+    }
+
+    @Override
+    public Void visitExpression(Stmt.Expression expr) {
+        evaluate(expr.expression);
+        return null;
+    }
+
+    @Override
+    public Void visitPrint(Stmt.Print expr) {
+        Object value = evaluate(expr.expression);
+        System.out.println(Lox.stringify(value));
+        return null;
+    }
+
+    @Override
+    public Void visitVarDeclaration(Stmt.VarDeclaration expr) {
+        Object value = null;
+        if(expr.initializer!=null) {
+            value = evaluate(expr.initializer);
+        }
+
+        environment.define(expr.name.lexeme, value, expr.isConst);
+        return null;
     }
 
     @Override
@@ -26,7 +59,8 @@ public class Interpreter implements Expr.Visitor<Object> {
                 if(left instanceof Double && right instanceof Double) return (double)left + (double)right;
                 if(left instanceof String && right instanceof String) return (String)left + right;
 
-                throw new RuntimeError(expr.operator, "Cannot perform addition between string and number");
+                throw new RuntimeError(expr.operator, "Both operands in addition should be either strings or numbers " +
+                        "(left: " + left + " right: " + right + ")");
             }
             case MINUS -> {
                 checkNumberOperands(expr.operator, left, right);
@@ -86,8 +120,26 @@ public class Interpreter implements Expr.Visitor<Object> {
     }
 
     @Override
+    public Object visitGrouping(Expr.Grouping expr) {
+        return evaluate(expr.expression);
+    }
+
+    @Override
     public Object visitLiteral(Expr.Literal expr) {
         return expr.value;
+    }
+
+    @Override
+    public Object visitVariable(Expr.Variable expr) {
+        return environment.get(expr.name);
+    }
+
+    @Override
+    public Object visitAssign(Expr.Assign expr) {
+        Token variable = expr.name;
+        Object value = evaluate(expr.value);
+        environment.assign(variable, value);
+        return value;
     }
 
     private Object evaluate(Expr expr) {

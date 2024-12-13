@@ -2,11 +2,15 @@ package Parser;
 
 import Lox.Lox;
 
-public class AstPrinter implements Expr.Visitor<String> {
+import java.util.List;
+
+public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
     int level = 0;
 
-    public void print(Expr expr) {
-        System.out.println(expr.accept(this));
+    public void print(List<Stmt> stmts) {
+        for(Stmt stmt: stmts) {
+            System.out.println(stmt.accept(this));
+        }
     }
 
     @Override
@@ -20,8 +24,18 @@ public class AstPrinter implements Expr.Visitor<String> {
     }
 
     @Override
+    public String visitGrouping(Expr.Grouping expr) {
+        return parenthesize("group", expr.expression);
+    }
+
+    @Override
     public String visitLiteral(Expr.Literal expr) {
         return Lox.stringify(expr.value);
+    }
+
+    @Override
+    public String visitVariable(Expr.Variable expr) {
+        return "";
     }
 
     private String parenthesize(String prefix, Expr ...expressions) {
@@ -36,5 +50,20 @@ public class AstPrinter implements Expr.Visitor<String> {
         builder.append(")");
         return builder.toString();
 
+    }
+
+    @Override
+    public String visitExpression(Stmt.Expression expr) {
+        return parenthesize("expr", expr.expression);
+    }
+
+    @Override
+    public String visitPrint(Stmt.Print expr) {
+        return parenthesize("print", expr.expression);
+    }
+
+    @Override
+    public String visitVarDeclaration(Stmt.VarDeclaration expr) {
+        return "";
     }
 }

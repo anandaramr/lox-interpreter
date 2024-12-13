@@ -27,10 +27,10 @@ public class TokenManager {
         return false;
     }
 
-    public void expect(String err, TokenType ...type) {
-        if(match(type)) return;
-        synchronize();
-        throw new Parser().error("Syntax error");
+    public Token expect(String err, TokenType ...type) {
+        if(match(type)) return previous();
+
+        throw new Parser().error("Syntax error: " + err, previous().line);
     }
 
     public Token peek() {
@@ -41,7 +41,7 @@ public class TokenManager {
     public void synchronize() {
         if(previous().type==TokenType.SEMICOLON || match(TokenType.SEMICOLON)) return;
 
-        while(!match(TokenType.SEMICOLON)) advance();
+        while(!isAtEnd() && !match(TokenType.SEMICOLON)) advance();
     }
 
     public Token previous() {
