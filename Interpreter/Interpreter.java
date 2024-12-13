@@ -1,137 +1,122 @@
 package Interpreter;
 
 import Lexer.Token;
-import Lexer.TokenType;
-import java.util.List;
+import Lox.Lox;
+import Lox.RuntimeError;
+import Parser.Expr;
 
-public class Interpreter {
-    private TokenManager tokens;
-    
-    public void execute(List<Token> tokenList) {
-        tokens = new TokenManager(tokenList);
+public class Interpreter implements Expr.Visitor<Object> {
 
-        while(!tokens.isAtEnd()) {
-
-            if(tokens.match(TokenType.SAY)) {
-                StringBuilder buffer = parseExpression();
-                if(!buffer.isEmpty()) System.out.println(buffer);
-            }
-            else if(tokens.match(TokenType.IDENTIFIER)) {
-                String variable = tokens.previous().lexeme;
-                StringBuilder buffer = new StringBuilder();
-
-                if(tokens.match(TokenType.PLUSEQ)) {
-                    buffer.append(Pool.getVariable(variable));
-                } else if(!tokens.match(TokenType.EQUAL)) continue;
-
-                buffer.append(parseExpression());
-                Pool.setVariable(variable, buffer.toString());
-            }
-            else if (tokens.match(TokenType.SEMICOLON)) {
-                tokens.advance();
-            }
-            else {
-                System.out.println("Unexpected symbol: \n\t" + tokens.peek().lexeme);
-                break;
-            }
+    public void interpret(Expr expr) {
+        try {
+            Object value = evaluate(expr);
+            System.out.println(Lox.stringify(value));
+        } catch (RuntimeError err) {
+            Lox.runtimeError(err);
         }
     }
 
-    private StringBuilder parseExpression() {
-        StringBuilder buffer = new StringBuilder();
-        if(tokens.match(TokenType.STRING, TokenType.IDENTIFIER)) buffer.append(valueOf(tokens.previous()));
+    @Override
+    public Object visitBinaryExpr(Expr.BinaryExpr expr) {
+        Object left = evaluate(expr.left);
+        Object right = evaluate(expr.right);
 
-        while(tokens.match(TokenType.PLUS)) {
-            tokens.expect("Unexpected symbol: \n\t" + tokens.peek().line, TokenType.STRING, TokenType.IDENTIFIER);
-            buffer.append(valueOf(tokens.previous()));
-        }
+        switch (expr.operator.type) {
+            case PLUS -> {
+                if(left instanceof Double && right instanceof Double) return (double)left + (double)right;
+                if(left instanceof String && right instanceof String) return (String)left + right;
 
-        boolean firstSync = tokens.isSynchronized();
-        tokens.expect("Syntax Error: \n\tExpected semicolon at end of input", TokenType.SEMICOLON);
-        boolean secondSync = tokens.isSynchronized();
-
-        return firstSync || secondSync ? new StringBuilder() : buffer;
-    }
-
-    private String valueOf(Token token) {
-        switch (token.type) {
-            case STRING -> {
-                return token.lexeme;
+                throw new RuntimeError(expr.operator, "Cannot perform addition between string and number");
             }
-            case IDENTIFIER -> {
-                String value = Pool.getVariable(token.lexeme);
-                
-                if(value==null) {
-                    System.out.println("Undefined variable: \n\t" + token.lexeme);
-                    tokens.synchronize();
-                    return "";
-                }
-                return value;
+            case MINUS -> {
+                checkNumberOperands(expr.operator, left, right);
+                return (double)left - (double)right;
             }
-            default -> {
-                System.out.println("Unexpected token: \n\t" + token.lexeme);
-                tokens.synchronize();
-                return "";
+            case STAR -> {
+                checkNumberOperands(expr.operator, left, right);
+                return (double)left * (double)right;
             }
-        }
-    }
-}
-
-class TokenManager {
-    List<Token> tokens;
-    private int current;
-    private boolean isSync;
-
-    TokenManager(List<Token> tokens) {
-        this.tokens = tokens;
-        this.current = 0;
-        this.isSync = false;
-    }
-
-    public boolean match(TokenType ...types) {
-        if(isAtEnd()) return false;
-
-        for (TokenType type: types) {
-            if(peek().type==type) {
-                advance();
-                return true;
+            case FORSLASH -> {
+                checkNumberOperands(expr.operator, left, right);
+                return (double)left / (double)right;
+            }
+            case LESSERTHAN -> {
+                checkNumberOperands(expr.operator, left, right);
+                return (double)left < (double)right;
+            }
+            case LESSERTHANEQU -> {
+                checkNumberOperands(expr.operator, left, right);
+                return (double)left <= (double)right;
+            }
+            case GREATERTHAN -> {
+                checkNumberOperands(expr.operator, left, right);
+                return (double)left > (double)right;
+            }
+            case GREATERTHANEQU -> {
+                checkNumberOperands(expr.operator, left, right);
+                return (double)left >= (double)right;
+            }
+            case BANGEQUAL -> {
+                return !isEqual(left,right);
+            }
+            case DEQUAL -> {
+                return isEqual(left,right);
             }
         }
-        return false;
+
+        return null;
     }
 
-    public void expect(String err, TokenType ...type) {
-        if(match(type)) return;
+    @Override
+    public Object visitUnary(Expr.Unary expr) {
+        Object operand = evaluate(expr.operand);
 
-        System.out.println(err);
-        synchronize();
+        switch (expr.operator.type) {
+            case MINUS -> {
+                checkNumberOperands(expr.operator, operand);
+                return - (double)operand;
+            }
+            case BANG -> {
+                checkBooleanOperand(expr.operator, operand);
+                return !isTruthy(operand);
+            }
+        }
+
+        return null;
     }
 
-    public Token peek() {
-        if(isAtEnd()) return null;
-        return tokens.get(current);
+    @Override
+    public Object visitLiteral(Expr.Literal expr) {
+        return expr.value;
     }
 
-    public void synchronize() {
-        while(!isAtEnd() && peek().type!=TokenType.SEMICOLON) advance();
-        isSync = true;
+    private Object evaluate(Expr expr) {
+        return expr.accept(this);
     }
 
-    public boolean isSynchronized() {
-        if(!isSync) return false;
-        isSync = false;
+    private boolean isTruthy(Object object) {
+        if(object==null) return false;
+        if(object instanceof Boolean) return (boolean) object;
+        if(object instanceof String) return !((String) object).isEmpty();
+
         return true;
     }
 
-    public Token previous() {
-        return tokens.get(current-1);
+    private boolean isEqual(Object a, Object b) {
+        if(a==null && b==null) return true;
+        if(a==null) return false;
+
+        return a.equals(b);
     }
 
-    public void advance() {
-        if(!isAtEnd()) current++;
+    private void checkNumberOperands(Token operator, Object ...operands) {
+        for(Object operand: operands) {
+            if(!(operand instanceof Double)) throw new RuntimeError(operator, "Operand must be a number");
+        }
     }
 
-    public boolean isAtEnd() {
-        return current==tokens.size();
+    private void checkBooleanOperand(Token operator, Object operand) {
+        if(operand instanceof Boolean) return;
+        throw new RuntimeError(operator, "Operand must be of type boolean");
     }
 }
