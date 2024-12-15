@@ -12,6 +12,8 @@ public class Keywords {
         keywords.put("false", TokenType.FALSE);
         keywords.put("null", TokenType.NULL);
         keywords.put("print", TokenType.PRINT);
+        keywords.put("if", TokenType.IF);
+        keywords.put("else", TokenType.ELSE);
     }
 
     public static TokenType getType(String key) {

@@ -32,21 +32,23 @@ public class Lexer {
             }
             else if (src.match('+')) {
                 if(!src.match('=')) src.match('+');
-
-                String lexeme = src.getLexeme();
-                addToken(Operators.getType(lexeme), lexeme);
+                addOperatorToken();
             }
             else if (src.match('-')) {
                 if(!src.match('=')) src.match('-');
-
-                String lexeme = src.getLexeme();
-                addToken(Operators.getType(lexeme), lexeme);
+                addOperatorToken();
             }
             else if ( src.match('*', '/', '=', '<', '>') ) {
                 src.match('=');
-
-                String lexeme = src.getLexeme();
-                addToken(Operators.getType(lexeme), lexeme);
+                addOperatorToken();
+            }
+            else if(src.match('&')) {
+                src.expect('&', "Unexpected token \"&\" \nDid you mean '&&'?");
+                addOperatorToken();
+            }
+            else if(src.match('|')) {
+                src.expect('|', "Unexpected token \"|\" \nDid you mean '||'?");
+                addOperatorToken();
             }
             else if (src.match('"')) {
                 src.resetPtr();
@@ -54,6 +56,9 @@ public class Lexer {
                 addToken(TokenType.STRING, src.getLexeme());
 
                 src.expect('"', "Expected \" end of string");
+            }
+            else if(src.match('?', ':')) {
+                addOperatorToken();
             }
             else if (src.match('(')) {
                 addToken(TokenType.LEFTPAR, src.getLexeme());
@@ -73,7 +78,6 @@ public class Lexer {
             else if (src.match('\n')) {
                 src.line++;
             } else if (!src.match(' ', '\t')) {
-                // to-do: define SyntaxError class to handle error
                 Ngi.error("Syntax Error: Unexpected token: \"" + src.peek() + '"', src.line);
                 src.advance();
             }
@@ -82,6 +86,11 @@ public class Lexer {
         }
 
         return tokens;
+    }
+
+    private void addOperatorToken() {
+        String lexeme = src.getLexeme();
+        addToken(Operators.getType(lexeme), lexeme);
     }
 
     private void addToken(TokenType type, String lexeme) {

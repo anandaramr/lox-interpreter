@@ -10,11 +10,13 @@ public abstract class Expr {
 
     public interface Visitor<E> {
         E visitBinaryExpr(BinaryExpr expr);
+        E visitLogicalExpr(LogicalExpr expr);
         E visitUnary(Unary expr);
         E visitGrouping(Grouping expr);
         E visitLiteral(Literal expr);
         E visitVariable(Variable expr);
         E visitAssign(Assign expr);
+        E visitTernaryExpr(TernaryExpr expr);
     }
 
     public static class BinaryExpr extends Expr {
@@ -30,6 +32,38 @@ public abstract class Expr {
 
         public <E> E accept(Visitor<E> visitor) {
             return visitor.visitBinaryExpr(this);
+        }
+    }
+
+    public static class LogicalExpr extends Expr {
+        LogicalExpr(Expr left, Token operator, Expr right) {
+            this.left = left;
+            this.operator = operator;
+            this.right = right;
+        }
+
+        public final Expr left;
+        public final Token operator;
+        public final Expr right;
+
+        public <E> E accept(Visitor<E> visitor) {
+            return visitor.visitLogicalExpr(this);
+        }
+    }
+
+    public static class TernaryExpr extends Expr {
+        TernaryExpr(Expr condition, Expr left, Expr right) {
+            this.condition = condition;
+            this.left = left;
+            this.right = right;
+        }
+
+        public final Expr condition;
+        public final Expr left;
+        public final Expr right;
+
+        public <E> E accept(Visitor<E> visitor) {
+            return visitor.visitTernaryExpr(this);
         }
     }
 

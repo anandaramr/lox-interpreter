@@ -22,6 +22,10 @@ public class Operators {
         operators.put("<=", TokenType.LESSERTHANEQU);
         operators.put("!", TokenType.BANG);
         operators.put("!=", TokenType.BANGEQUAL);
+        operators.put("&&", TokenType.AND);
+        operators.put("||", TokenType.OR);
+        operators.put("?", TokenType.QUESTIONMARK);
+        operators.put(":", TokenType.COLON);
     }
 
     public static TokenType getType(String key) {

@@ -1,6 +1,7 @@
 package Interpreter;
 
 import Lexer.Token;
+import Lexer.TokenType;
 import Ngi.Ngi;
 import Ngi.RuntimeError;
 import Parser.Expr;
@@ -102,6 +103,21 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
+    public Object visitLogicalExpr(Expr.LogicalExpr expr) {
+        Object left = evaluate(expr.left);
+
+        if(expr.operator.type==TokenType.OR) {
+            if(isTruthy(left)) return left;
+        }
+
+        if(expr.operator.type==TokenType.AND) {
+            if(!isTruthy(left)) return left;
+        }
+
+        return evaluate(expr.right);
+    }
+
+    @Override
     public Object visitUnary(Expr.Unary expr) {
         Object operand = evaluate(expr.operand);
 
@@ -143,8 +159,30 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
+    public Object visitTernaryExpr(Expr.TernaryExpr expr) {
+        Object condition = evaluate(expr.condition);
+
+        if(isTruthy(condition)) {
+            return evaluate(expr.left);
+        } else {
+            return evaluate(expr.right);
+        }
+    }
+
+    @Override
     public Void visitBlock(Stmt.Block stmt) {
         executeBlock(stmt.statements, new Environment(environment));
+        return null;
+    }
+
+    @Override
+    public Void visitIf(Stmt.If stmt) {
+        if (isTruthy(evaluate(stmt.condition))) {
+            execute(stmt.thenBranch);
+        } else if (stmt.elseBranch != null) {
+            execute(stmt.elseBranch);
+        }
+
         return null;
     }
 

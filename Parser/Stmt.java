@@ -13,6 +13,7 @@ public abstract class Stmt {
         E visitPrint(Print expr);
         E visitVarDeclaration(VarDeclaration expr);
         E visitBlock(Block expr);
+        E visitIf(If expr);
     }
 
     public static class Expression extends Stmt {
@@ -67,6 +68,22 @@ public abstract class Stmt {
 
         public <E> E accept(Visitor<E> visitor) {
             return visitor.visitBlock(this);
+        }
+    }
+
+    public static class If extends Stmt {
+        If(Expr condition, Stmt thenBranch, Stmt elseBranch) {
+            this.condition = condition;
+            this.thenBranch = thenBranch;
+            this.elseBranch = elseBranch;
+        }
+
+        public final Expr condition;
+        public final Stmt thenBranch;
+        public final Stmt elseBranch;
+
+        public <E> E accept(Visitor<E> visitor) {
+            return visitor.visitIf(this);
         }
     }
 }

@@ -54,6 +54,19 @@ public class Parser {
 
     private Stmt parseStmt() {
         if(tokens.match(TokenType.PRINT)) { return parsePrintStmt(); }
+        if(tokens.match(TokenType.IF)) {
+            tokens.expect("Expected (", TokenType.LEFTPAR);
+            Expr condition = parseExpression();
+            tokens.expect("Expected )", TokenType.RIGHTPAR);
+
+            Stmt thenBranch = parseStmt();
+            Stmt elseBranch = null;
+            if(tokens.match(TokenType.ELSE)) {
+                elseBranch = parseStmt();
+            }
+
+            return new Stmt.If(condition, thenBranch, elseBranch);
+        }
 
         if(tokens.match(TokenType.LEFTBRACE)) {
             List<Stmt> statements = new ArrayList<>();
@@ -86,12 +99,11 @@ public class Parser {
     }
 
     private Expr parseExpression() {
-        int a = 1;
         return parseAssignment();
     }
 
     private Expr parseAssignment() {
-        Expr expr = parseEquality();
+        Expr expr = parseTernary();
 
         if(tokens.match(TokenType.EQUAL)) {
             Token equals = tokens.previous();
@@ -106,6 +118,43 @@ public class Parser {
         }
 
         return expr;
+    }
+
+    private Expr parseTernary() {
+        Expr condition = parseOr();
+
+        if(tokens.match(TokenType.QUESTIONMARK)) {
+            Expr left = parseOr();
+            tokens.expect("SyntaxError: Expected :", TokenType.COLON);
+            Expr right = parseOr();
+            return new Expr.TernaryExpr(condition, left, right);
+        }
+
+        return condition;
+    }
+
+    private Expr parseOr() {
+        Expr left = parseAnd();
+
+        while (tokens.match(TokenType.OR)) {
+            Token operator = tokens.previous();
+            Expr right = parseAnd();
+            left = new Expr.LogicalExpr(left, operator, right);
+        }
+
+        return left;
+    }
+
+    private Expr parseAnd() {
+        Expr left = parseEquality();
+
+        while (tokens.match(TokenType.AND)) {
+            Token operator = tokens.previous();
+            Expr right = parseEquality();
+            left = new Expr.LogicalExpr(left, operator, right);
+        }
+
+        return left;
     }
 
     private Expr parseEquality() {
@@ -181,8 +230,7 @@ public class Parser {
         }
         if(tokens.match(TokenType.RIGHTPAR)) { throw error("SyntaxError: Unexpected symbol \")\"", tokens.previous().line); }
 
-        // to-do: parse groupings
-        throw error("Parse Error: Not handled token: \n\t " + tokens.peek().type, tokens.peek().line);
+        throw error("SyntaxError: Unexpected token " + tokens.peek().lexeme, tokens.peek().line);
     }
 
     ParseError error(String err, int line) {

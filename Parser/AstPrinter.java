@@ -18,6 +18,11 @@ public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
     }
 
     @Override
+    public String visitLogicalExpr(Expr.LogicalExpr expr) {
+        return "";
+    }
+
+    @Override
     public String visitUnary(Expr.Unary expr) {
         return parenthesize(expr.operator.lexeme, expr.operand);
     }
@@ -39,6 +44,11 @@ public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
 
     @Override
     public String visitAssign(Expr.Assign expr) {
+        return "";
+    }
+
+    @Override
+    public String visitTernaryExpr(Expr.TernaryExpr expr) {
         return "";
     }
 
@@ -73,6 +83,11 @@ public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
 
     @Override
     public String visitBlock(Stmt.Block expr) {
+        return "";
+    }
+
+    @Override
+    public String visitIf(Stmt.If expr) {
         return "";
     }
 }
