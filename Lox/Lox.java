@@ -69,9 +69,9 @@ public class Lox {
 
     public static void error(String err, int line) {
         if(source==null) {
-            System.out.println("\n " + err + '\n');
+            System.out.println("\n" + err + '\n');
         } else {
-            System.out.println("\n " + err + "\n\t" + line + " |\t" + getLine(line) + '\n');
+            System.out.println("\n" + err + "\n\t" + line + " |\t" + getLine(line) + '\n');
         }
         hadError = true;
     }
@@ -105,9 +105,9 @@ public class Lox {
         int line = err.token.line;
 
         if(source==null) {
-            System.out.println("\n RuntimeError: " + err.getMessage() + '\n');
+            System.out.println("\nRuntimeError: " + err.getMessage() + '\n');
         } else {
-            System.out.println('\n' + err.getMessage() + "\n\t" + line + " |\t" + getLine(line) + '\n');
+            System.out.println("\nRuntimeError: " + err.getMessage() + "\n\t" + line + " |\t" + getLine(line) + '\n');
         }
         hadError = true;
     }
