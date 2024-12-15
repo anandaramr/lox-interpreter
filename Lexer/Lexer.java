@@ -61,6 +61,12 @@ public class Lexer {
             else if (src.match(')')) {
                 addToken(TokenType.RIGHTPAR, src.getLexeme());
             }
+            else if (src.match('{')) {
+                addToken(TokenType.LEFTBRACE, src.getLexeme());
+            }
+            else if (src.match('}')) {
+                addToken(TokenType.RIGHTBRACE, src.getLexeme());
+            }
             else if (src.match(';')) {
                 addToken(TokenType.SEMICOLON, src.getLexeme());
             }
