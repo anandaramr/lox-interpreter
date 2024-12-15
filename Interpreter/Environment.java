@@ -1,7 +1,7 @@
 package Interpreter;
 
 import Lexer.Token;
-import Lox.RuntimeError;
+import Ngi.RuntimeError;
 
 import java.util.HashMap;
 

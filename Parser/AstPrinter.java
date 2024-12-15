@@ -1,6 +1,6 @@
 package Parser;
 
-import Lox.Lox;
+import Ngi.Ngi;
 
 import java.util.List;
 
@@ -29,7 +29,7 @@ public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
 
     @Override
     public String visitLiteral(Expr.Literal expr) {
-        return Lox.stringify(expr.value);
+        return Ngi.stringify(expr.value);
     }
 
     @Override

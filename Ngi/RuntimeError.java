@@ -1,4 +1,4 @@
-package Lox;
+package Ngi;
 
 import Lexer.Token;
 

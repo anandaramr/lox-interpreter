@@ -1,6 +1,6 @@
 package Parser;
 
-import Lox.Lox;
+import Ngi.Ngi;
 import Lexer.Token;
 import Lexer.TokenType;
 
@@ -186,7 +186,7 @@ public class Parser {
     }
 
     ParseError error(String err, int line) {
-        Lox.error(err, line);
+        Ngi.error(err, line);
         return new ParseError();
     }
 }

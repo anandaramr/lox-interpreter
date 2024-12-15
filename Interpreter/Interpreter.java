@@ -1,8 +1,8 @@
 package Interpreter;
 
 import Lexer.Token;
-import Lox.Lox;
-import Lox.RuntimeError;
+import Ngi.Ngi;
+import Ngi.RuntimeError;
 import Parser.Expr;
 import Parser.Stmt;
 
@@ -17,7 +17,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
                 execute(statement);
             }
         } catch (RuntimeError err) {
-            Lox.runtimeError(err);
+            Ngi.runtimeError(err);
         }
     }
 
@@ -34,7 +34,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     @Override
     public Void visitPrint(Stmt.Print expr) {
         Object value = evaluate(expr.expression);
-        System.out.println(Lox.stringify(value));
+        System.out.println(Ngi.stringify(value));
         return null;
     }
 

@@ -1,4 +1,4 @@
-package Lox;
+package Ngi;
 
 import Interpreter.Interpreter;
 import Lexer.Lexer;
@@ -13,7 +13,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Scanner;
 
-public class Lox {
+public class Ngi {
     private static String source = null;
     private static boolean hadError = false;
     private static boolean hadRuntimeError = false;

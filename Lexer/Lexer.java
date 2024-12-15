@@ -1,6 +1,6 @@
 package Lexer;
 
-import Lox.Lox;
+import Ngi.Ngi;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,7 +74,7 @@ public class Lexer {
                 src.line++;
             } else if (!src.match(' ', '\t')) {
                 // to-do: define SyntaxError class to handle error
-                Lox.error("Syntax Error: Unexpected token: \"" + src.peek() + '"', src.line);
+                Ngi.error("Syntax Error: Unexpected token: \"" + src.peek() + '"', src.line);
                 src.advance();
             }
 

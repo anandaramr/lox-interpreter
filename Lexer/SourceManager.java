@@ -1,6 +1,6 @@
 package Lexer;
 
-import Lox.Lox;
+import Ngi.Ngi;
 
 public class SourceManager {
     private final String source;
@@ -43,12 +43,12 @@ public class SourceManager {
 
     public void expect(char c, String err) {
         if(isAtEnd() && c!='"') {
-            Lox.error("Unexpected end of statement", line);
+            Ngi.error("Unexpected end of statement", line);
             return;
         }
 
         if(!match(c)) {
-            Lox.error("Syntax Error: Expected '" + c + "'", line);
+            Ngi.error("Syntax Error: Expected '" + c + "'", line);
             advance();
         }
     }
