@@ -2,6 +2,8 @@ package Parser;
 
 import Lexer.Token;
 
+import java.util.List;
+
 public abstract class Stmt {
 
     public abstract <E> E accept(Visitor<E> visitor);
@@ -10,6 +12,7 @@ public abstract class Stmt {
         E visitExpression(Expression expr);
         E visitPrint(Print expr);
         E visitVarDeclaration(VarDeclaration expr);
+        E visitBlock(Block expr);
     }
 
     public static class Expression extends Stmt {
@@ -52,6 +55,18 @@ public abstract class Stmt {
         @Override
         public <E> E accept(Visitor<E> visitor) {
             return visitor.visitVarDeclaration(this);
+        }
+    }
+
+    public static class Block extends Stmt {
+        Block(List<Stmt> statements) {
+            this.statements = statements;
+        }
+
+        public final List<Stmt> statements;
+
+        public <E> E accept(Visitor<E> visitor) {
+            return visitor.visitBlock(this);
         }
     }
 }

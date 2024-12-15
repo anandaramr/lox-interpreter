@@ -1,7 +1,6 @@
 package Parser;
 
 import Lox.Lox;
-import Lox.RuntimeError;
 import Lexer.Token;
 import Lexer.TokenType;
 
@@ -54,7 +53,23 @@ public class Parser {
     }
 
     private Stmt parseStmt() {
-        if(tokens.match(TokenType.PRINT)) return parsePrintStmt();
+        if(tokens.match(TokenType.PRINT)) { return parsePrintStmt(); }
+
+        if(tokens.match(TokenType.LEFTBRACE)) {
+            List<Stmt> statements = new ArrayList<>();
+
+            while(!tokens.isAtEnd() && tokens.peek().type!=TokenType.RIGHTBRACE) {
+                statements.add(declaration());
+            }
+
+            tokens.expect("SyntaxError: Expected } at end of block", TokenType.RIGHTBRACE);
+            return new Stmt.Block(statements);
+        }
+
+        if(tokens.match(TokenType.RIGHTBRACE)) {
+            throw error("Unexpected symbol: \"}\"", tokens.previous().line);
+        }
+
         return parseExpressionStmt();
     }
 
@@ -71,6 +86,7 @@ public class Parser {
     }
 
     private Expr parseExpression() {
+        int a = 1;
         return parseAssignment();
     }
 
@@ -163,6 +179,7 @@ public class Parser {
             tokens.expect("Expected ')' at end of expression", TokenType.RIGHTPAR);
             return new Expr.Grouping(expression);
         }
+        if(tokens.match(TokenType.RIGHTPAR)) { throw error("SyntaxError: Unexpected symbol \")\"", tokens.previous().line); }
 
         // to-do: parse groupings
         throw error("Parse Error: Not handled token: \n\t " + tokens.peek().type, tokens.peek().line);

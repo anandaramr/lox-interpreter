@@ -5,7 +5,6 @@ import Lox.Lox;
 import java.util.List;
 
 public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
-    int level = 0;
 
     public void print(List<Stmt> stmts) {
         for(Stmt stmt: stmts) {
@@ -38,6 +37,11 @@ public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
         return "";
     }
 
+    @Override
+    public String visitAssign(Expr.Assign expr) {
+        return "";
+    }
+
     private String parenthesize(String prefix, Expr ...expressions) {
 
         StringBuilder builder = new StringBuilder();
@@ -64,6 +68,11 @@ public class AstPrinter implements Expr.Visitor<String>, Stmt.Visitor<String> {
 
     @Override
     public String visitVarDeclaration(Stmt.VarDeclaration expr) {
+        return "";
+    }
+
+    @Override
+    public String visitBlock(Stmt.Block expr) {
         return "";
     }
 }

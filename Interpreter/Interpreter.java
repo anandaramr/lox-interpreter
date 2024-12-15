@@ -9,7 +9,7 @@ import Parser.Stmt;
 import java.util.List;
 
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
-    Environment environment = new Environment();
+    Environment environment = new Environment(null);
 
     public void interpret(List<Stmt> statements) {
         try {
@@ -45,7 +45,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             value = evaluate(expr.initializer);
         }
 
-        environment.define(expr.name.lexeme, value, expr.isConst);
+        environment.define(expr.name, value, expr.isConst);
         return null;
     }
 
@@ -140,6 +140,23 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         Object value = evaluate(expr.value);
         environment.assign(variable, value);
         return value;
+    }
+
+    @Override
+    public Void visitBlock(Stmt.Block stmt) {
+        executeBlock(stmt.statements, new Environment(environment));
+        return null;
+    }
+
+    private void executeBlock(List<Stmt> statements, Environment environment) {
+        Environment previous = this.environment;
+
+        try {
+            this.environment = environment;
+            for (Stmt statement: statements) { execute(statement); }
+        } finally {
+            this.environment = previous;
+        }
     }
 
     private Object evaluate(Expr expr) {
