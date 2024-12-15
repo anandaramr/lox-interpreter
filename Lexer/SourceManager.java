@@ -48,7 +48,7 @@ public class SourceManager {
         }
 
         if(!match(c)) {
-            Ngi.error("Syntax Error: Expected '" + c + "'", line);
+            Ngi.error(err, line);
             advance();
         }
     }
